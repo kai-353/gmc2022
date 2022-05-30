@@ -59,14 +59,29 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { leerlingnummer, password } = req.body;
 
+  if (leerlingnummer.trim() === "" || password.trim() === "") {
+    res.status(400);
+    throw new Error("Vul aub alle velden in");
+  }
+
+  if (isNaN(leerlingnummer)) {
+    res.status(400);
+    throw new Error("Leerlingnummer is geen getal");
+  }
+
   const user = await User.findOne({ leerlingnummer });
 
   if (user && password && (await bcrypt.compare(password, user.password))) {
     res.json({
       _id: user.id,
       leerlingnummer: user.leerlingnummer,
+      group: user.group,
+      tto: user.tto,
       token: generateToken(user._id),
     });
+  } else {
+    res.status(400);
+    throw new Error("Inloggegevens komen niet overeen");
   }
 });
 

@@ -13,6 +13,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  tto: {
+    type: Boolean,
+    required: true,
+  },
 });
 
 const User = mongoose.model("User", UserSchema);

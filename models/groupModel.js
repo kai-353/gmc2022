@@ -11,7 +11,7 @@ const GroupSchema = new mongoose.Schema({
   },
   completedAssignments: {
     type: Array,
-    default: ["start"],
+    default: [{ title: "start", id: "" }],
   },
   tries: {
     type: Array,
@@ -24,11 +24,11 @@ tries:
 
 [
   {
-    title: A1,
+    id: xxx,
     wrong_tries: 0,
   },
   {
-    title: A2,
+    id: xxx,
     wrong_tries: 3,
   }
 ]

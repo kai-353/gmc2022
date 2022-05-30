@@ -21,6 +21,10 @@ const LessonSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
+  tto: {
+    type: Boolean,
+    required: true,
+  },
   dateStart: {
     type: Date,
     required: true,
