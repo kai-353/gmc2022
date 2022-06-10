@@ -18,7 +18,6 @@ function App() {
       socket.disconnect();
     } else {
       socket.connect();
-      socket.emit("joinGroup", user.group, user.tto);
     }
   }, [user]);
 

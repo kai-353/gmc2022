@@ -8,9 +8,14 @@ exports.socketConnection = (server) => {
   io.on("connection", (socket) => {
     console.info(`Client connected [id=${socket.id}]`);
 
-    socket.on("joinGroup", (group, tto) => {
-      console.log(`${tto ? "tto" : "reg"}:${group}`);
-      socket.join(`${tto ? "tto" : "reg"}:${group}`);
+    socket.on("joinGroup", (group) => {
+      console.log("joining: " + group);
+      socket.join(group);
+    });
+
+    socket.on("leaveGroup", (group) => {
+      console.log("leaving: " + group);
+      socket.leave(group);
     });
 
     socket.on("disconnect", () => {
@@ -21,6 +26,18 @@ exports.socketConnection = (server) => {
 
 exports.sendMessage = (message) => io.emit("message", message);
 
-exports.test = () => io.emit("test");
+exports.socketEmit = (to, message) => {
+  console.log(to, message);
+  io.to(to).emit(message);
+};
+
+exports.test = () => {
+  io.sockets.sockets.forEach((socket) => {
+    // console.log(socket.rooms.size);
+    if (socket.rooms.size < 2) {
+      io.to(socket.id).emit("connectToRoom");
+    }
+  });
+};
 
 exports.getRooms = () => io.sockets.adapter.rooms;

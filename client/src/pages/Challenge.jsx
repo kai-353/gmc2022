@@ -1,10 +1,11 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useContext, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaLongArrowAltLeft } from "react-icons/fa";
 import { toast } from "react-toastify";
 import Spinner from "../components/Spinner";
+import { SocketContext } from "../app/socket";
 
 function Challenge() {
   const [answer, setAnswer] = useState("");
@@ -15,6 +16,8 @@ function Challenge() {
   const [challenge, setChallenge] = useState(undefined);
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const socket = useContext(SocketContext);
 
   const toHome = () => {
     navigate("/");
@@ -28,7 +31,7 @@ function Challenge() {
     };
     try {
       const response = await axios.get(API_URL + id, config);
-      console.log(response.data);
+      // console.log(response.data);
       setChallenge(response.data);
     } catch (error) {
       const message =
@@ -48,9 +51,43 @@ function Challenge() {
   };
 
   const onSubmit = (e) => {
-    console.log(answer);
     e.preventDefault();
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${user.token}`,
+      },
+    };
+
+    axios.post(API_URL + "submit/" + id, { answer }, config);
   };
+
+  const onHome = () => {
+    // navigate("/challenge/" + id);
+    navigate("/");
+  };
+
+  const onRefresh = () => {
+    window.location.reload(false);
+  };
+
+  const connectToRoom = () => {
+    socket.emit("joinGroup", `${user.group}:${id}`);
+  };
+
+  useEffect(() => {
+    socket.emit("joinGroup", `${user.group}:${id}`);
+    socket.on("home", onHome);
+    socket.on("refresh", onRefresh);
+    socket.on("connectToRoom", connectToRoom);
+
+    return () => {
+      socket.off("home", onHome);
+      socket.off("refresh", onRefresh);
+      socket.off("connectToRoom", connectToRoom);
+      socket.emit("leaveGroup", `${user.group}:${id}`);
+    };
+  }, [socket, dispatch]);
 
   useEffect(() => {
     getChallenge();

@@ -16,16 +16,28 @@ function Dashboard() {
     (state) => state.assignment
   );
 
-  const onTest = () => {
-    console.log("test");
+  const onRefresh = () => {
+    window.location.reload(false);
+  };
+
+  const connectToRoom = () => {
+    socket.emit("joinGroup", `${user.group}:dash`);
   };
 
   useEffect(() => {
-    socket.on("test", onTest);
+    if (!user) {
+      return;
+    }
+    socket.emit("joinGroup", `${user.group}:dash`);
+    socket.on("refresh", onRefresh);
+    socket.on("connectToRoom", connectToRoom);
+
     return () => {
-      socket.off("test", onTest);
+      socket.off("refresh", onRefresh);
+      socket.off("connectToRoom", connectToRoom);
+      socket.emit("leaveGroup", `${user.group}:dash`);
     };
-  }, [socket]);
+  }, [socket, user, dispatch]);
 
   useEffect(() => {
     if (isError) {

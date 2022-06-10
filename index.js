@@ -34,4 +34,4 @@ const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, console.log(`Server running on  ${PORT}`));
 
-setInterval(() => test(), 5000);
+setInterval(() => test(), 2000);

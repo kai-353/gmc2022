@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const Lesson = require("../models/lessonModel");
 const mongoose = require("mongoose");
 const Group = require("../models/groupModel");
+const { socketEmit } = require("../config/socketio");
 
 const getAll = asyncHandler(async (req, res) => {
   const group = await Group.findOne({ groupNumber: req.user.group });
@@ -14,7 +15,7 @@ const getAll = asyncHandler(async (req, res) => {
     .where("required")
     .in(completedTitles)
     .where("title")
-    .nin(group.completedTitles)
+    .nin(completedTitles)
     .where("dateStart")
     .lte(Date.now())
     .where("dateEnd")
@@ -69,6 +70,7 @@ const getAssignment = asyncHandler(async (req, res) => {
       imgurls: assignment.imgurls,
       tries: 5,
     });
+    return;
   }
   const tries =
     5 -
@@ -130,7 +132,7 @@ const submit = asyncHandler(async (req, res) => {
 
   const group = await Group.findOne({ groupNumber: req.user.group });
 
-  const assignment = await Lesson.findById(req.params.id);
+  const assignment = await Lesson.findById(id);
 
   if (!assignment) {
     res.status(400);
@@ -140,7 +142,14 @@ const submit = asyncHandler(async (req, res) => {
   const unixStart = new Date(assignment.dateStart).getTime();
   const unixEnd = new Date(assignment.dateEnd).getTime();
 
-  const completedTitles = group.completedAssignments.map((el) => el.title);
+  const completedTitles = new Array();
+
+  var i = 0;
+
+  group.completedAssignments.map((el) => {
+    completedTitles[i] = el.title;
+    i++;
+  });
 
   const hasAccess =
     unixStart <= Date.now() &&
@@ -163,7 +172,7 @@ const submit = asyncHandler(async (req, res) => {
     throw new Error("You have not opened this assignment yet");
   }
 
-  if (assignment.includes(answer)) {
+  if (assignment.answers.includes(answer)) {
     await Group.updateOne(
       { _id: group._id },
       {
@@ -176,11 +185,38 @@ const submit = asyncHandler(async (req, res) => {
       }
     );
     // WS stuff
+    socketEmit(`${group.groupNumber}:${id}`, "home");
+    socketEmit(`${group.groupNumber}:dash`, "refresh");
+
     res.status(200).json({
       correct: true,
     });
   } else {
-    // WS stuff
+    await Group.updateOne(
+      { _id: group._id, "tries.id": id },
+      {
+        $inc: { "tries.$.wrong_tries": 1 },
+      }
+    );
+
+    if (triesObject.wrong_tries === 4) {
+      await Group.updateOne(
+        { _id: group._id },
+        {
+          $push: {
+            completedAssignments: {
+              title: assignment.title,
+              id: assignment._id.toString(),
+            },
+          },
+        }
+      );
+      socketEmit(`${group.groupNumber}:dash`, "refresh");
+      socketEmit(`${group.groupNumber}:${id}`, "home");
+    } else {
+      socketEmit(`${group.groupNumber}:${id}`, "refresh");
+    }
+
     res.status(200).json({
       correct: false,
     });
