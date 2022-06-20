@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   group: {
-    type: String,
+    type: Number,
     required: true,
   },
   tto: {

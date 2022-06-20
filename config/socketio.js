@@ -31,6 +31,10 @@ exports.socketEmit = (to, message) => {
   io.to(to).emit(message);
 };
 
+exports.refreshAll = () => {
+  io.emit("refreshAll");
+};
+
 exports.test = () => {
   io.sockets.sockets.forEach((socket) => {
     // console.log(socket.rooms.size);

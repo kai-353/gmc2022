@@ -31,7 +31,7 @@ function Challenge() {
     };
     try {
       const response = await axios.get(API_URL + id, config);
-      // console.log(response.data);
+      console.log(response.data);
       setChallenge(response.data);
     } catch (error) {
       const message =
@@ -102,7 +102,7 @@ function Challenge() {
       <div style={{ width: "100%" }}>
         <button className="btn" onClick={toHome}>
           <FaLongArrowAltLeft />
-          {user.tto ? "Back" : "Terug"}
+          {user ? (user.tto ? "Back" : "Terug") : "Terug"}
         </button>
         {challenge && <p>tries: {challenge.tries}/5</p>}
       </div>
@@ -139,18 +139,22 @@ function Challenge() {
           />
           <button className="btn btn-submit">Submit</button>
         </form>
-        <img
-          src="http://localhost:5000/image/1%20Woordzoeker%20(NL)-1.jpg"
-          onSubmit={onSubmit}
-          // src="https://socket.io/images/rooms-redis.png"
-          alt=""
-          style={{
-            maxWidth: "80%",
-            border: "1px solid black",
-            borderRadius: "0.5rem",
-            marginBottom: "50px",
-          }}
-        />
+        {challenge &&
+          challenge.imgurls.map((imgurl) => (
+            <img
+              // src="http://localhost:8080/image/1%20Woordzoeker%20(NL)-1.jpg"
+              src={imgurl}
+              onSubmit={onSubmit}
+              // src="https://socket.io/images/rooms-redis.png"
+              alt=""
+              style={{
+                maxWidth: "80%",
+                border: "1px solid black",
+                borderRadius: "0.5rem",
+                marginBottom: "50px",
+              }}
+            />
+          ))}
       </div>
     </>
   );

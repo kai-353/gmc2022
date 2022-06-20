@@ -14,7 +14,8 @@ function AssignmentItem({ assignment }) {
     <div className="box-shadow shop-item card" onClick={toChallenge}>
       <img
         className="card-img-top"
-        src="http://localhost:5000/image/1%20Woordzoeker%20(NL)-1.jpg"
+        // src="http://localhost:8080/image/1%20Woordzoeker%20(NL)-1.jpg"
+        src={assignment.imgurls[0]}
         alt="couldn't load img"
       />
       <div className="card-body">

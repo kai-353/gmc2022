@@ -15,10 +15,6 @@ const app = express();
 const server = http.createServer(app);
 socketConnection(server);
 
-app.get("/", (req, res) => {
-  res.sendFile("/Users/kaideumers/Desktop/Github/gmc2022/index.html");
-});
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -29,8 +25,18 @@ app.get("/image/:resource", (req, res) => {
   res.sendFile(path.join(__dirname, "/assets/", req.params.resource));
 });
 
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "/client/build")));
+
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"))
+  );
+} else {
+  app.get("/", (req, res) => res.send("Please set to production"));
+}
+
 app.use(errorHandler);
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 server.listen(PORT, console.log(`Server running on  ${PORT}`));
 

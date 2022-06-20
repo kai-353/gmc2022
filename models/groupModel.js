@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const GroupSchema = new mongoose.Schema({
   groupNumber: {
-    type: "String",
+    type: Number,
     required: true,
   },
   members: {

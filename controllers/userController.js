@@ -3,9 +3,10 @@ const User = require("../models/userModel");
 const Group = require("../models/groupModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { refreshAll } = require("../config/socketio");
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { leerlingnummer, password, group } = req.body;
+  const { leerlingnummer, password, group, tto } = req.body;
 
   if (!leerlingnummer || !password || !group) {
     throw new Error("Please add all fields");
@@ -26,6 +27,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const user = await User.create({
     leerlingnummer,
     group,
+    tto,
     password: hashedPassword,
   });
 
@@ -95,6 +97,49 @@ const getGroup = asyncHandler(async (req, res) => {
   res.status(200).json(group);
 });
 
+const changeGroups = asyncHandler(async (req, res) => {
+  if (!req.body.password || req.body.password !== "wiskundespel123") {
+    res.status(401);
+    throw new Error("Wrong password");
+  }
+
+  const groups = await Group.find({ groupNumber: { $gte: 100 } });
+
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups[i];
+
+    const users = await User.find({ leerlingnummer: { $in: group.members } });
+
+    for (let j = 0; j < users.length; j++) {
+      const user = users[j];
+
+      await User.updateOne(
+        { _id: user._id },
+        { $set: { group: group.groupNumber } }
+      );
+    }
+  }
+  refreshAll();
+  res.status(200).json({ message: "Groepjes veranderd" });
+});
+
+const secret = asyncHandler(async (req, res) => {
+  const groups = await Group.find();
+
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups[i];
+
+    const number = group.groupNumber + 100;
+
+    await Group.create({
+      groupNumber: number,
+      members: group.members,
+    });
+  }
+
+  res.status(200).json({ message: "OK" });
+});
+
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: "30d",
@@ -106,4 +151,6 @@ module.exports = {
   loginUser,
   getMe,
   getGroup,
+  changeGroups,
+  secret,
 };

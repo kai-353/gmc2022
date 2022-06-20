@@ -4,14 +4,18 @@ const {
   loginUser,
   getMe,
   getGroup,
+  changeGroups,
+  secret,
 } = require("../controllers/userController");
 const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 router.get("/me", protect, getMe);
 router.get("/group", protect, getGroup);
+// router.get("/secretRoute", secret);
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.post("/changeGroups", changeGroups);
 
 module.exports = router;
