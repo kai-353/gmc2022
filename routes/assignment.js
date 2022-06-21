@@ -6,9 +6,11 @@ const {
   getAssignment,
   create,
   submit,
+  getResults,
 } = require("../controllers/assignmentController");
 
 router.get("/all", protect, getAll);
+router.get("/results", getResults);
 router.get("/:id", protect, getAssignment);
 
 router.post("/create", protect, create);

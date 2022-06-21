@@ -223,9 +223,51 @@ const submit = asyncHandler(async (req, res) => {
   }
 });
 
+const getResults = asyncHandler(async (req, res) => {
+  if (!req.body.password || req.body.password !== "wiskundespel123") {
+    res.status(401);
+    throw new Error("Wrong password");
+  }
+
+  const groups = await Group.find();
+  const assignments = await Lesson.find();
+
+  let resultObject = {};
+
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups[i];
+    let pointObject = {};
+
+    for (let j = 0; j < group.tries.length; j++) {
+      const tryObject = group.tries[j];
+
+      const assignment = assignments.find(
+        (element) => element._id.toString() === tryObject.id
+      );
+
+      let pts = assignment.maxpoints * (5 - tryObject.wrong_tries);
+      if (pts !== 0) {
+        pointObject[assignment.title] = pts / 5;
+      } else {
+        pointObject[assignment.title] = 0;
+      }
+      // console.log(assignment);
+    }
+
+    resultObject[group.groupNumber] = pointObject;
+  }
+
+  // console.log(groups.map((group) => group.tries));
+  // console.log("====================================");
+  // console.log(assignments);
+
+  res.status(200).json(resultObject);
+});
+
 module.exports = {
   getAll,
   getAssignment,
   create,
   submit,
+  getResults,
 };

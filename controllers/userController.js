@@ -140,6 +140,24 @@ const secret = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "OK" });
 });
 
+const getGroups = asyncHandler(async (req, res) => {
+  if (!req.body.password || req.body.password !== "wiskundespel123") {
+    res.status(401);
+    throw new Error("Wrong password");
+  }
+
+  const groups = await Group.find();
+
+  let groupObject = {};
+
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups[i];
+    groupObject[group.groupNumber] = group;
+  }
+
+  res.status(200).json(groupObject);
+});
+
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: "30d",
@@ -153,4 +171,5 @@ module.exports = {
   getGroup,
   changeGroups,
   secret,
+  getGroups,
 };
