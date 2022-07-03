@@ -25,6 +25,7 @@ function App() {
       socket.disconnect();
     } else {
       socket.connect();
+      socket.emit("groupnumber", user.group);
     }
   }, [user]);
 

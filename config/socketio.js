@@ -21,6 +21,14 @@ exports.socketConnection = (server) => {
     socket.on("disconnect", () => {
       console.info(`Client disconnected [id=${socket.id}]`);
     });
+
+    socket.on("groupnumber", (groupNumber) => {
+      const nowDate = new Date();
+      const maxDate = new Date("2022-07-04T11:15:00.000+00:00");
+      if (nowDate.getTime() > maxDate.getTime() && groupNumber < 299) {
+        io.emit("refreshAll");
+      }
+    });
   });
 };
 
