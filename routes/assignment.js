@@ -13,7 +13,8 @@ router.get("/all", protect, getAll);
 router.get("/results", getResults);
 router.get("/:id", protect, getAssignment);
 
-router.post("/create", protect, create);
+router.post("/create", create);
+// router.post("/secret", secret);
 router.post("/submit/:id", protect, submit);
 
 module.exports = router;

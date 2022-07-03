@@ -172,7 +172,11 @@ const submit = asyncHandler(async (req, res) => {
     throw new Error("You have not opened this assignment yet");
   }
 
-  if (assignment.answers.includes(answer)) {
+  if (
+    assignment.answers
+      .map((answer) => answer.toLowerCase())
+      .includes(answer.toLowerCase())
+  ) {
     await Group.updateOne(
       { _id: group._id },
       {
@@ -185,8 +189,8 @@ const submit = asyncHandler(async (req, res) => {
       }
     );
     // WS stuff
-    socketEmit(`${group.groupNumber}:${id}`, "home");
-    socketEmit(`${group.groupNumber}:dash`, "refresh");
+    socketEmit(`${group.groupNumber}:${id}`, "correct", assignment.title);
+    socketEmit(`${group.groupNumber}:dash`, "refreshCorrect", assignment.title);
 
     res.status(200).json({
       correct: true,
@@ -211,10 +215,14 @@ const submit = asyncHandler(async (req, res) => {
           },
         }
       );
-      socketEmit(`${group.groupNumber}:dash`, "refresh");
-      socketEmit(`${group.groupNumber}:${id}`, "home");
+      socketEmit(
+        `${group.groupNumber}:dash`,
+        "refreshIncorrect",
+        assignment.title
+      );
+      socketEmit(`${group.groupNumber}:${id}`, "incorrect", assignment.title);
     } else {
-      socketEmit(`${group.groupNumber}:${id}`, "refresh");
+      socketEmit(`${group.groupNumber}:${id}`, "refresh", assignment.title);
     }
 
     res.status(200).json({
@@ -264,10 +272,32 @@ const getResults = asyncHandler(async (req, res) => {
   res.status(200).json(resultObject);
 });
 
+const secret = asyncHandler(async (req, res) => {
+  const lessons = await Lesson.find();
+
+  for (let i = 0; i < lessons.length; i++) {
+    const lesson = lessons[i];
+
+    await Lesson.updateOne(
+      { _id: lesson._id },
+      {
+        $push: {
+          imgurls: `/image/${lesson.title}%20${
+            lesson.tto ? "(EN)" : "(NL)"
+          }-1.jpg`,
+        },
+      }
+    );
+  }
+
+  res.status(200).json({ message: "OK" });
+});
+
 module.exports = {
   getAll,
   getAssignment,
   create,
   submit,
   getResults,
+  secret,
 };

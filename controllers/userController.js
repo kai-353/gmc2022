@@ -6,9 +6,9 @@ const jwt = require("jsonwebtoken");
 const { refreshAll } = require("../config/socketio");
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { leerlingnummer, password, group, tto } = req.body;
+  const { leerlingnummer, password, group, group2, tto } = req.body;
 
-  if (!leerlingnummer || !password || !group) {
+  if (!leerlingnummer || !password || !group || !group2) {
     throw new Error("Please add all fields");
   }
 
@@ -34,6 +34,8 @@ const registerUser = asyncHandler(async (req, res) => {
   if (user) {
     const group = await Group.findOne({ groupNumber: user.group });
 
+    const dbGroup2 = await Group.findOne({ groupNumber: group2 });
+
     if (!group) {
       await Group.create({
         groupNumber: user.group,
@@ -42,6 +44,18 @@ const registerUser = asyncHandler(async (req, res) => {
     } else {
       await Group.updateOne(
         { groupNumber: user.group },
+        { $push: { members: user.leerlingnummer } }
+      );
+    }
+
+    if (!dbGroup2) {
+      await Group.create({
+        groupNumber: group2,
+        members: [user.leerlingnummer],
+      });
+    } else {
+      await Group.updateOne(
+        { groupNumber: group2 },
         { $push: { members: user.leerlingnummer } }
       );
     }
@@ -103,7 +117,7 @@ const changeGroups = asyncHandler(async (req, res) => {
     throw new Error("Wrong password");
   }
 
-  const groups = await Group.find({ groupNumber: { $gte: 100 } });
+  const groups = await Group.find({ groupNumber: { $gte: 299 } });
 
   for (let i = 0; i < groups.length; i++) {
     const group = groups[i];

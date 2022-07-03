@@ -62,8 +62,24 @@ function Challenge() {
     axios.post(API_URL + "submit/" + id, { answer }, config);
   };
 
-  const onHome = () => {
+  const onCorrect = (title) => {
     // navigate("/challenge/" + id);
+    toast.success(
+      title +
+        (user && user.tto
+          ? " has successfully been done"
+          : " is succesvol afgerond")
+    );
+    navigate("/");
+  };
+
+  const onIncorrect = (title) => {
+    toast.error(
+      title +
+        (user && user.tto
+          ? " has unsuccessfully been done"
+          : " is onsuccesvol afgerond")
+    );
     navigate("/");
   };
 
@@ -77,12 +93,13 @@ function Challenge() {
 
   useEffect(() => {
     socket.emit("joinGroup", `${user.group}:${id}`);
-    socket.on("home", onHome);
+    socket.on("correct", onCorrect);
+    socket.on("incorrect", onIncorrect);
     socket.on("refresh", onRefresh);
     socket.on("connectToRoom", connectToRoom);
 
     return () => {
-      socket.off("home", onHome);
+      socket.off("correct", onCorrect);
       socket.off("refresh", onRefresh);
       socket.off("connectToRoom", connectToRoom);
       socket.emit("leaveGroup", `${user.group}:${id}`);
@@ -142,6 +159,7 @@ function Challenge() {
         {challenge &&
           challenge.imgurls.map((imgurl) => (
             <img
+              key={imgurl}
               // src="http://localhost:8080/image/1%20Woordzoeker%20(NL)-1.jpg"
               src={imgurl}
               onSubmit={onSubmit}

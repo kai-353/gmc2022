@@ -26,9 +26,9 @@ exports.socketConnection = (server) => {
 
 exports.sendMessage = (message) => io.emit("message", message);
 
-exports.socketEmit = (to, message) => {
-  console.log(to, message);
-  io.to(to).emit(message);
+exports.socketEmit = (to, message, title) => {
+  console.log(to, message, title);
+  io.to(to).emit(message, title);
 };
 
 exports.refreshAll = () => {

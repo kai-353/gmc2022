@@ -62,7 +62,7 @@ function Login() {
           <FaSignInAlt />
           Login
         </h1>
-        <p>Log in met je leerlingnummer en password</p>
+        <p>Log in met je leerlingnummer en wachtwoord</p>
       </section>
       <section className="form">
         <form onSubmit={onSubmit}>
